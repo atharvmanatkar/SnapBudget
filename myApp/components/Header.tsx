@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 20,
+    paddingHorizontal: 5,
     paddingTop: 50,
     paddingBottom: 20,
   },
@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   name: {
-    marginLeft: 12,
+    marginLeft: 10,
     fontSize: 18,
     fontWeight: "700",
   },

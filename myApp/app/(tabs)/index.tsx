@@ -1,35 +1,149 @@
-import { View, Text, StyleSheet, ScrollView } from "react-native";
-import Header from "../../components/Header";
-import ScanButton from "../../components/ScanButton";
-import CategoryCard from "../../components/CategoryCard";
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import THEME from '../../constants/theme'; 
+import Header from '../../components/Header';
+import CategoryCard from '../../components/CategoryCard';
 
-export default function Home() {
+export default function HomeScreen() {
+  const router = useRouter();
+
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <Header />
 
+      {/* 1. Monthly Spendings Card */}
+      <View style={styles.spendingCard}>
+        <Text style={styles.spendingLabel}>Monthly Spending</Text>
+        <Text style={styles.spendingAmount}>₹48,250.00</Text>
+        <View style={styles.spendingFooter}>
+          <Ionicons name="trending-up" size={16} color="#16C784" />
+          <Text style={styles.spendingSubtext}> 8% more than last month</Text>
+        </View>
+      </View>
 
-      <ScanButton />
+      {/* 2. Smart Tracking Section */}
+      <View style={styles.heroSection}>
+        <View style={styles.heroTextContainer}>
+          <Text style={styles.heroTitle}>Smart Tracking</Text>
+          <Text style={styles.heroSubtitle}>Instant receipt scanning & AI insights</Text>
+        </View>
+        <TouchableOpacity style={styles.scanButton} onPress={() => router.push('/scan')}>
+          <Ionicons name="camera" size={22} color="white" />
+          <Text style={styles.scanButtonText}>Scan a Receipt</Text>
+        </TouchableOpacity>
+      </View>
 
-      <Text style={styles.sectionTitle}>Budget Categories</Text>
+      {/* 3. Analytical Content: Spending Breakdown */}
+      <View style={styles.analyticsSection}>
+        <Text style={styles.sectionTitle}>Spending Analysis</Text>
+        <View style={styles.chartContainer}>
+          {/* Custom Bar Chart Illustration */}
+          <View style={styles.chartRow}>
+            {[
+              { day: 'Mon', vol: 40 }, { day: 'Tue', vol: 70 }, 
+              { day: 'Wed', vol: 50 }, { day: 'Thu', vol: 90 }, 
+              { day: 'Fri', vol: 65 }
+            ].map((item, index) => (
+              <View key={index} style={styles.barWrapper}>
+                <View style={[styles.bar, { height: item.vol }]} />
+                <Text style={styles.barLabel}>{item.day}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      </View>
 
-      <CategoryCard title="Food" amount="€400 left" />
-      <CategoryCard title="Clothes" amount="€120 left" />
-      <CategoryCard title="Travel" amount="€80 over" isOver />
+      {/* 4. Budget Categories */}
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Budget Categories</Text>
+        <TouchableOpacity onPress={() => router.push('/category')}>
+          <Text style={styles.seeAllText}>See all</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.categoriesList}>
+        <CategoryCard title="Food" amount="₹4,000 left" status="success" />
+        <CategoryCard title="Clothes" amount="₹1,200 left" status="success" />
+      </View>
+
+      {/* 5. Smart Insights Section */}
+      <View style={styles.insightsGrid}>
+        <View style={styles.insightBox}>
+          <Ionicons name="pie-chart-outline" size={24} color={THEME.colors.accent} />
+          <Text style={styles.insightValue}>32%</Text>
+          <Text style={styles.insightLabel}>Needs</Text>
+        </View>
+        <View style={styles.insightBox}>
+          <Ionicons name="flash-outline" size={24} color="#F1C40F" />
+          <Text style={styles.insightValue}>₹2,400</Text>
+          <Text style={styles.insightLabel}>Saved</Text>
+        </View>
+      </View>
+
+      <View style={{ height: 40 }} /> 
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#F5F6FA",
+  container: { flex: 1, backgroundColor: THEME.colors.background, paddingHorizontal: 20 },
+  spendingCard: {
+    backgroundColor: THEME.colors.primary,
+    padding: 24,
+    borderRadius: THEME.borderRadius.l,
+    marginTop: 10,
+    ...THEME.shadow.light,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    marginHorizontal: 20,
-    marginTop: 20,
-    marginBottom: 10,
+  spendingLabel: { color: 'rgba(255,255,255,0.7)', fontSize: 14, fontWeight: '600' },
+  spendingAmount: { color: 'white', fontSize: 32, fontWeight: '800', marginVertical: 8 },
+  spendingFooter: { flexDirection: 'row', alignItems: 'center' },
+  spendingSubtext: { color: '#16C784', fontSize: 12, fontWeight: '600' },
+  
+  heroSection: {
+    backgroundColor: THEME.colors.card,
+    borderRadius: THEME.borderRadius.l,
+    padding: 24,
+    marginVertical: 20,
+    ...THEME.shadow.light,
   },
+  heroTitle: { fontSize: 20, fontWeight: '800' },
+  heroSubtitle: { fontSize: 14, color: THEME.colors.textSecondary, marginTop: 4, marginBottom: 15 },
+  scanButton: {
+    backgroundColor: THEME.colors.primary,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    padding: 14,
+    borderRadius: THEME.borderRadius.m,
+  },
+  scanButtonText: { color: 'white', fontWeight: '700', marginLeft: 10 },
+
+  analyticsSection: { marginBottom: 20 },
+  sectionTitle: { fontSize: 18, fontWeight: '800', color: THEME.colors.textPrimary, marginBottom: 15 },
+  chartContainer: {
+    backgroundColor: THEME.colors.card,
+    padding: 20,
+    borderRadius: THEME.borderRadius.l,
+    ...THEME.shadow.light,
+  },
+  chartRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', height: 100 },
+  barWrapper: { alignItems: 'center' },
+  bar: { width: 35, backgroundColor: THEME.colors.accent, borderRadius: 6 },
+  barLabel: { fontSize: 10, color: THEME.colors.textSecondary, marginTop: 8 },
+
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 },
+  seeAllText: { color: THEME.colors.accent, fontWeight: '600' },
+  categoriesList: { gap: 12 },
+
+  insightsGrid: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 20 },
+  insightBox: {
+    width: '48%',
+    backgroundColor: THEME.colors.card,
+    padding: 20,
+    borderRadius: THEME.borderRadius.l,
+    ...THEME.shadow.light,
+  },
+  insightValue: { fontSize: 20, fontWeight: '800', marginTop: 10 },
+  insightLabel: { fontSize: 12, color: THEME.colors.textSecondary },
 });
