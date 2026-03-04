@@ -1,6 +1,6 @@
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 require('dotenv').config();
-
+const categoryRoutes = require('./routes/categoryRoutes');
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -24,6 +24,8 @@ app.get('/test', (req, res) => {
 
 // Use Receipt Routes
 app.use('/', receiptRoutes);
+app.use('/api/categories', categoryRoutes);
+
 
 app.listen(5000, '0.0.0.0', () =>
   console.log('Server running on port 5000')
