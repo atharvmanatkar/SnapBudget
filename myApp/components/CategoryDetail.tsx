@@ -1,11 +1,12 @@
 import React from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, SafeAreaView, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import THEME from '../constants/theme';
+import { useRouter } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
 export default function CategoryDetail({ category, onBack }) {
+  const router = useRouter();
   const TERTIARY_GREEN = '#2DCC70';
 
   return (
@@ -22,7 +23,7 @@ export default function CategoryDetail({ category, onBack }) {
         contentContainerStyle={styles.scrollContent} 
         showsVerticalScrollIndicator={false}
       >
-        {/* 2. Total Amount Card - Confirmed BLACK Background */}
+        {/* 2. Total Amount Card */}
         <View style={styles.blackHeroCard}>
           <Text style={styles.heroLabel}>Total {category} Spent</Text>
           <Text style={styles.heroAmount}>₹ 10,000</Text>
@@ -39,17 +40,20 @@ export default function CategoryDetail({ category, onBack }) {
             </View>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statLabel}>day</Text>
+            <Text style={styles.statLabel}>Today</Text>
             <Text style={styles.statValue}>₹ 100</Text>
           </View>
         </View>
 
-        {/* 4. Receipts List */}
+        {/* 4. Receipts List Header */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Recent Receipts</Text>
-          <TouchableOpacity><Text style={{ color: TERTIARY_GREEN, fontWeight: '600' }}>See all</Text></TouchableOpacity>
+          <TouchableOpacity>
+            <Text style={{ color: TERTIARY_GREEN, fontWeight: '600' }}>See all</Text>
+          </TouchableOpacity>
         </View>
 
+        {/* Receipts List */}
         {[1, 2, 3].map((item) => (
           <View key={item} style={styles.receiptBox}>
             <View style={styles.receiptInfo}>
@@ -61,18 +65,19 @@ export default function CategoryDetail({ category, onBack }) {
                 <Text style={styles.receiptDate}>24 Feb 2025</Text>
               </View>
             </View>
-            <Text style={styles.receiptAmount}>-₹ 500</Text>
+            <Text style={styles.receiptAmount}>₹ 500</Text>
           </View>
         ))}
 
-        {/* Padding for ScrollView to ensure content isn't hidden by FAB */}
+        {/* Bottom Spacing */}
         <View style={{ height: 100 }} />
       </ScrollView>
 
-      {/* 5. Plus Button - FIXED Bottom Right */}
+      {/* 5. Plus Button - Navigates to additems.tsx */}
       <TouchableOpacity 
         style={[styles.fab, { backgroundColor: TERTIARY_GREEN }]}
         activeOpacity={0.9}
+        onPress={() => router.push('/additems')}
       >
         <Ionicons name="add" size={35} color="white" />
       </TouchableOpacity>
@@ -85,7 +90,7 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: 20, // Adjusted for SafeAreaView
+    paddingTop: 20,
     paddingHorizontal: 20,
     marginBottom: 20,
   },
@@ -95,14 +100,12 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 26, fontWeight: '800', color: '#1A1A1A' },
   scrollContent: { paddingHorizontal: 20 },
-  
-  // BLACK HERO CARD
   blackHeroCard: { 
     backgroundColor: '#000000', 
     padding: 30, 
     borderRadius: 28, 
     marginBottom: 25,
-    overflow: 'hidden', // Clips the accent circle
+    overflow: 'hidden',
     elevation: 8,
     shadowColor: '#000',
     shadowOpacity: 0.3,
@@ -120,17 +123,14 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     backgroundColor: 'rgba(255,255,255,0.05)'
   },
-
   statsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 30 },
   statCard: { backgroundColor: 'white', width: '47%', padding: 20, borderRadius: 24, elevation: 2 },
   statLabel: { color: '#888', fontSize: 13, marginBottom: 5 },
   statValue: { fontSize: 22, fontWeight: 'bold' },
   progressBase: { height: 6, backgroundColor: '#F0F0F0', borderRadius: 3, marginTop: 10 },
   progressFill: { height: 6, borderRadius: 3 },
-
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 },
   sectionTitle: { fontSize: 18, fontWeight: '700', color: '#1A1A1A' },
-  
   receiptBox: { 
     backgroundColor: 'white', 
     padding: 15, 
@@ -153,8 +153,6 @@ const styles = StyleSheet.create({
   receiptText: { fontSize: 16, fontWeight: '600', color: '#1A1A1A' },
   receiptDate: { color: '#999', fontSize: 13, marginTop: 2 },
   receiptAmount: { fontSize: 16, fontWeight: '700', color: '#E74C3C' },
-  
-  // FIXED FAB POSITIONING
   fab: { 
     position: 'absolute', 
     bottom: 40, 
@@ -165,7 +163,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center', 
     alignItems: 'center', 
     elevation: 10,
-    shadowColor: '#2DCC70', // Glowing effect for the green button
+    shadowColor: '#2DCC70',
     shadowOpacity: 0.4,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 6 }

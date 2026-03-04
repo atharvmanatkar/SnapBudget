@@ -2,14 +2,23 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams } from 'expo-router';
 import THEME from '../../constants/theme';
 import CategoryCard from '../../components/CategoryCard';
 import CategoryDetail from '../../components/CategoryDetail';
+import { useEffect } from 'react';
 
 export default function CategoryPage() {
   const router = useRouter();
+  const { category } = useLocalSearchParams();
   // State to track if a specific category is open
   const [selectedCategory, setSelectedCategory] = useState(null);
+  useEffect(() => {
+  if (category) {
+    setSelectedCategory(category);
+  }
+}, [category]);
+  
 
 if (selectedCategory) {
   return (
