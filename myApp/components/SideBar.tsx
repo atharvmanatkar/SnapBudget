@@ -9,19 +9,20 @@ export default function SideBar({ isVisible, onClose }) {
   const router = useRouter();
 
   const menuItems = [
-    { name: 'Dashboard', icon: 'grid-outline', route: '/' },
+    { name: 'Home', icon: 'home-outline', route: '/' },
+    { name: 'Dashboard', icon: 'bar-chart-outline', route: '/dashboard'},
     { name: 'All Categories', icon: 'list-outline', route: '/category' },
     { name: 'History', icon: 'time-outline', route: '/history' },
     { name: 'Logout', icon: 'log-out-outline', route: '/login', color: '#E74C3C' },
   ];
 
-  const handleNavigation = (route) => {
-    onClose();
-    router.push(route);
+  const handleNavigation = (route: string) => {
+    onClose(); // Close sidebar first
+    router.push(route); // Navigate to the selected screen
   };
 
   return (
-    <Modal visible={isVisible} transparent animationType="fade">
+    <Modal visible={isVisible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.overlay}>
         {/* Drawer Container FIRST (on the LEFT) */}
         <View style={styles.drawerContainer}>
@@ -87,13 +88,13 @@ const styles = StyleSheet.create({
     width: 60, 
     height: 60, 
     borderRadius: 30, 
-    backgroundColor: '#2DCC70', 
+    backgroundColor: '#16C784', // Updated to match your primary green
     justifyContent: 'center', 
     alignItems: 'center', 
     marginBottom: 10 
   },
   avatarText: { color: 'white', fontSize: 20, fontWeight: 'bold' },
-  userName: { fontSize: 18, fontWeight: '700' },
+  userName: { fontSize: 18, fontWeight: '700', color: '#111' },
   menuList: { gap: 10 },
   menuItem: { 
     flexDirection: 'row', 
