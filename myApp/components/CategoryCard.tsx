@@ -2,8 +2,20 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import THEME from '../constants/theme'; // Adjust this path if your theme file is elsewhere
-
-export default function CategoryCard({ title, amount, status, iconName, onPress }) {
+type CategoryCardProps = {
+  title: string;
+  amount: string;
+  status: 'success' | 'danger';
+  iconName?: keyof typeof Ionicons.glyphMap;
+  onPress: () => void;
+};
+export default function CategoryCard({
+  title,
+  amount,
+  status,
+  iconName,
+  onPress,
+}: CategoryCardProps) {
   return (
     // TouchableOpacity is what makes the card clickable
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>

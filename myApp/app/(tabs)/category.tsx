@@ -12,10 +12,14 @@ export default function CategoryPage() {
   const router = useRouter();
   const { category } = useLocalSearchParams();
   // State to track if a specific category is open
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   useEffect(() => {
   if (category) {
-    setSelectedCategory(category);
+    if (Array.isArray(category)) {
+      setSelectedCategory(category[0]);
+    } else {
+      setSelectedCategory(category);
+    }
   }
 }, [category]);
   

@@ -4,8 +4,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
 const { width } = Dimensions.get('window');
-
-export default function CategoryDetail({ category, onBack }) {
+type CategoryDetailProps = {
+  category: string;
+  onBack: () => void;
+};
+export default function CategoryDetail({
+  category,
+  onBack,
+}: CategoryDetailProps) {
   const router = useRouter();
   const TERTIARY_GREEN = '#2DCC70';
 
