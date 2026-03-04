@@ -1,5 +1,5 @@
 // services/geminiService.js
-const fs = require('fs');
+const axios = require('axios');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 /**
@@ -7,21 +7,25 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
  * @param {string} filePath - Path to uploaded image
  * @returns {Promise<Array>} - JSON array of extracted products
  */
-async function extractProducts(filePath) {
-    try {
+async function extractProducts(url) {
+   try {
         if (!process.env.GEMINI_API_KEY) {
             throw new Error("GEMINI_API_KEY missing in environment variables");
         }
 
-        // Initialize client here
+        // 1. Initialize Gemini
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+        // Note: Ensure your model name is correct (e.g., "gemini-1.5-flash")
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-        const imageBuffer = fs.readFileSync(filePath);
+        // 2. Fetch the image from Cloudinary URL as a Buffer
+        const responseData = await axios.get(url, { responseType: 'arraybuffer' });
+        const imageBase64 = Buffer.from(responseData.data, 'binary').toString('base64');
+
         const imagePart = {
             inlineData: {
-                data: imageBuffer.toString("base64"),
-                mimeType: "image/jpeg",
+                data: imageBase64,
+                mimeType: "image/jpeg", // Cloudinary usually provides jpeg/png
             },
         };
 
@@ -31,26 +35,29 @@ async function extractProducts(filePath) {
         Only extract actual purchased items.
 
         Categorize each item into:
-        Grocery, Dairy, Snacks, Cleaning, Personal Care, Cloths give one category for one product.
+        Grocery, Dairy, Snacks, Cleaning, Personal Care, Cloths. Provide one category per product.
 
-        Return STRICT JSON like this:
+        Return STRICT JSON format:
         [
           { "product": "Item name", "price": 123, "category": "Category" }
         ]
         `;
 
+        // 3. Generate Content
         const result = await model.generateContent([prompt, imagePart]);
         const response = await result.response;
         let text = response.text();
+        
+        // Clean the JSON response from Gemini
         text = text.replace(/```json|```/g, "").trim();
         const aiResult = JSON.parse(text);
 
-        fs.unlinkSync(filePath); // Delete file after processing
+        // Note: fs.unlinkSync(filePath) is removed because the file is hosted on Cloudinary, not your disk.
 
         return aiResult;
 
     } catch (error) {
-        console.error("Gemini Service Error:", error);
+        console.error("Gemini Service Error:", error.message);
         throw error;
     }
 }

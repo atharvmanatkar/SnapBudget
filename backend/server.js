@@ -9,7 +9,27 @@ const Receipt = require('./models/Reciept');
 const { extractProducts } = require('./services/geminiService');
 
 const app = express();
-const upload = multer({ dest: 'uploads/' });
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+
+// 1. Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+// 2. Setup Cloudinary Storage Engine
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'SnapBudget_Receipts', // New folder in your Cloudinary account
+    allowed_formats: ['jpg', 'png', 'jpeg'],
+  },
+});
+
+// 3. Update the upload variable
+const upload = multer({ storage: storage });
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI)
@@ -35,6 +55,36 @@ app.get('/test', (req, res) => {
     res.json({ message: "Hello Shubham! Connection Successful! 🚀" });
 });
 
+// GET /api/stats/category-data
+app.get('/api/stats/category-data', async (req, res) => {
+    try {
+        const stats = await Receipt.aggregate([
+            // 1. Filter by the specific user
+            { $match: { userId: "shubham_01" } }, 
+            
+            // 2. "Unwind" the items array (treats each product as its own document)
+            { $unwind: "$items" },
+            
+            // 3. Group by category and sum the prices
+            {
+                $group: {
+                    _id: "$items.category",
+                    totalAmount: { $sum: "$items.price" },
+                    count: { $sum: 1 }
+                }
+            },
+            
+            // 4. Sort from highest spend to lowest
+            { $sort: { totalAmount: -1 } }
+        ]);
+
+        res.json(stats);
+    } catch (error) {
+        console.error("Stats Error:", error);
+        res.status(500).json({ error: "Failed to fetch stats" });
+    }
+});
+
 // Main Upload Route
 app.post('/upload', rateLimiter, upload.single('receipt'), async (req, res) => {
     try {
@@ -48,21 +98,21 @@ app.post('/upload', rateLimiter, upload.single('receipt'), async (req, res) => {
         const total = aiResult.reduce((sum, item) => sum + item.price, 0);
         
         // 3. Save to MongoDB with your new Schema fields
-        const newReceipt = new Receipt({
-            userId: "shubham_01", 
-            totalAmount: total,
-            items: aiResult.map(item => ({
-                product: item.product,
-                price: item.price,
-                category: item.category || 'Others'
-            })),
-            // Ensure date is captured for your Mon-Fri bar charts
-            date: new Date(),
-            // Optional: You could update your prompt to extract merchantName too
-            merchantName: "Recent Scan" 
-        });
+       const newReceipt = new Receipt({
+    userId: "shubham_01", 
+    totalAmount: total,
+    items: aiResult.map(item => ({
+        product: item.product,
+        price: item.price,
+        category: item.category || 'Others'
+    })),
+    date: new Date(),
+    merchantName: "Recent Scan",
+    // ADD THIS LINE:
+    imageUrl: req.body.imageUrl || "https://via.placeholder.com/150" 
+});
 
-        const savedReceipt = await newReceipt.save();
+const savedReceipt = await newReceipt.save();
         console.log("✅ Data saved to MongoDB!");
 
         // 4. Cleanup: Delete temp file
