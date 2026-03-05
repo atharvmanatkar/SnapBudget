@@ -4,7 +4,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
-
+const userRoutes = require('./routes/userRoutes');
 const receiptRoutes = require('./routes/receiptRoutes');
 
 const app = express();
@@ -24,6 +24,11 @@ app.get('/test', (req, res) => {
 
 // Use Receipt Routes
 app.use('/', receiptRoutes);
+<<<<<<< Updated upstream
+=======
+app.use('/', categoryRoutes);
+app.use('/', userRoutes);
+>>>>>>> Stashed changes
 
 app.listen(5000, '0.0.0.0', () =>
   console.log('Server running on port 5000')
