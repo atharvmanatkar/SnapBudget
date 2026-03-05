@@ -4,7 +4,7 @@ const categoryRoutes = require('./routes/categoryRoutes');
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
-
+const userRoutes = require('./routes/userRoutes');
 const receiptRoutes = require('./routes/receiptRoutes');
 
 const app = express();
@@ -24,7 +24,8 @@ app.get('/test', (req, res) => {
 
 // Use Receipt Routes
 app.use('/', receiptRoutes);
-app.use('/api/categories', categoryRoutes);
+app.use('/', categoryRoutes);
+app.use('/', userRoutes);
 
 
 app.listen(5000, '0.0.0.0', () =>

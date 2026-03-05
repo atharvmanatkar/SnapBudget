@@ -46,7 +46,7 @@ export default function ScanScreen() {
 
     try {
       // USE YOUR ACTUAL IP HERE (No localhost!)
-      const response = await axios.post('http://10.127.33.44:5000/upload', formData, {
+      const response = await axios.post('http://192.168.1.13:5000/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       Alert.alert("Success", "Receipt Analyzed & Saved to MongoDB!");
