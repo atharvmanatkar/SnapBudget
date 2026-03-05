@@ -30,18 +30,19 @@ async function extractProducts(url) {
         };
 
         const prompt = `
-        Extract product name and FINAL price from this bill image.
-        Ignore GST, subtotal, discount lines.
-        Only extract actual purchased items.
+  Extract product name and FINAL price from this bill image.
+  Ignore GST, subtotal, and discount lines. 
+  Only extract actual purchased items.
 
-        Categorize each item into:
-        Grocery, Dairy, Snacks, Cleaning, Personal Care, Cloths. Provide one category per product.
+  Categorize each item into one of the following:
+  Food, Dairy, Snacks, Cleaning, Personal Care, Cloths, 
+  Education, Health, Entertainment, Electronics, Transport, or Others.
 
-        Return STRICT JSON format:
-        [
-          { "product": "Item name", "price": 123, "category": "Category" }
-        ]
-        `;
+  Return STRICT JSON format:
+  [
+    { "product": "Item name", "price": 123, "category": "Category" }
+  ]
+`;
 
         // 3. Generate Content
         const result = await model.generateContent([prompt, imagePart]);

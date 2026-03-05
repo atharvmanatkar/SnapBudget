@@ -103,34 +103,39 @@ router.get('/api/stats/category-data', async (req, res) => {
 });
 
 // Weekly Spending
-router.get('/api/spending-stats', async (req, res) => {
-  try {
-    const stats = await Receipt.aggregate([
-      {
-        $group: {
-          _id: { $dayOfWeek: "$date" },
-          totalSpent: { $sum: "$totalAmount" }
-        }
-      },
-      { $sort: { "_id": 1 } }
-    ]);
+// ... existing upload and category-data routes ...
 
-    res.json(stats);
-  } catch (err) {
-    res.status(500).json({ error: "Failed to fetch stats" });
-  }
-});
-
-// Total Spending
+// 1. Get Total Spending for the Black Card
 router.get('/api/total-spending', async (req, res) => {
-  try {
-    const result = await Receipt.aggregate([
-      { $group: { _id: null, total: { $sum: "$totalAmount" } } }
-    ]);
-    res.json({ total: result[0]?.total || 0 });
-  } catch (err) {
-    res.status(500).json(err);
-  }
+    try {
+        const result = await Receipt.aggregate([
+            { $match: { userId: "shubham_01" } }, // Ensures it's only your data
+            { $group: { _id: null, total: { $sum: "$totalAmount" } } }
+        ]);
+        res.json({ total: result[0]?.total || 0 });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
+
+// 2. Get Daily Stats for the Bar Chart
+router.get('/api/daily-stats', async (req, res) => {
+    try {
+        const stats = await Receipt.aggregate([
+            { $match: { userId: "shubham_01" } },
+            {
+                $group: {
+                    _id: { $dayOfWeek: "$date" }, // 1 (Sun) to 7 (Sat)
+                    amount: { $sum: "$totalAmount" }
+                }
+            },
+            { $sort: { "_id": 1 } }
+        ]);
+        res.json(stats);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 
 module.exports = router;

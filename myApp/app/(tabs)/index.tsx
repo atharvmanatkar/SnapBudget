@@ -1,38 +1,102 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import axios from 'axios';
 import THEME from '../../constants/theme'; 
 import Header from '../../components/Header';
 import CategoryCard from '../../components/CategoryCard';
 import SideBar from '../../components/SideBar'; 
 
+const API_BASE_URL = 'http://10.127.33.44:5000/api';
+
 export default function HomeScreen() {
   const router = useRouter();
   const [isMenuVisible, setMenuVisible] = useState(false);
+  
+  // 1. Live State Variables
+  const [totalSpent, setTotalSpent] = useState(0);
+  const [categories, setCategories] = useState([]); // Dynamic categories state
+  const [chartData, setChartData] = useState([
+    { _id: 1, amount: 0 }, { _id: 2, amount: 0 }, { _id: 3, amount: 0 }, 
+    { _id: 4, amount: 0 }, { _id: 5, amount: 0 }, { _id: 6, amount: 0 }, { _id: 7, amount: 0 }
+  ]);
 
-  // Toggle function for the profile click
+  // 2. Data Fetching Logic
+  const loadDashboardData = async () => {
+    try {
+      // Fetch Total Spending
+      const totalRes = await axios.get(`${API_BASE_URL}/total-spending`);
+      setTotalSpent(totalRes.data.total);
+
+      // Fetch Daily Stats for Chart
+      const statsRes = await axios.get(`${API_BASE_URL}/daily-stats`);
+      const fullWeek = [1, 2, 3, 4, 5, 6, 7].map(dayId => {
+        const found = statsRes.data.find((d: any) => d._id === dayId);
+        return found || { _id: dayId, amount: 0 };
+      });
+      setChartData(fullWeek);
+
+      // Fetch Category Breakdown
+      const categoryRes = await axios.get(`${API_BASE_URL}/categories/breakdown`);
+      setCategories(categoryRes.data);
+    } catch (error) {
+      console.error("Dashboard Sync Error:", error);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      loadDashboardData();
+    }, [])
+  );
+
   const toggleMenu = () => setMenuVisible(!isMenuVisible);
+
+  const getDayName = (id: number) => {
+    const days = ['', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    return days[id] || '??';
+  };
+
+  // Helper to map Gemini categories to UI icons
+  const getCategoryIcon = (name: string) => {
+  const map: { [key: string]: any } = {
+    'Food': 'restaurant',
+    'Dairy': 'water',
+    'Snacks': 'fast-food',
+    'Cleaning': 'trash',
+    'Personal Care': 'heart',
+    'Cloths': 'shirt',
+    'Grocery': 'cart',
+    'Education': 'book',      // Added
+    'Health': 'medkit',       // Added
+    'Entertainment': 'film',  // Added
+    'Electronics': 'laptop',   // Added
+    'Transport': 'bus',       // Added
+    'Others': 'pricetag'      // Default
+  };
+  return map[name] || 'pricetag';
+};
 
   return (
     <View style={{ flex: 1, backgroundColor: THEME.colors.background }}>
-      {/* Sidebar Integration - Placed at the top level to overlay content */}
       <SideBar 
         isVisible={isMenuVisible} 
         onClose={() => setMenuVisible(false)} 
       />
 
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        {/* Pass the toggle function to your Header component */}
         <Header onMenuPress={toggleMenu} />
 
         {/* 1. Monthly Spendings Card */}
         <View style={styles.spendingCard}>
           <Text style={styles.spendingLabel}>Monthly Spending</Text>
-          <Text style={styles.spendingAmount}>₹48,250.00</Text>
+          <Text style={styles.spendingAmount}>
+            ₹{totalSpent.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+          </Text>
           <View style={styles.spendingFooter}>
-            <Ionicons name="trending-up" size={16} color="#16C784" />
-            <Text style={styles.spendingSubtext}> 8% more than last month</Text>
+            <Ionicons name="stats-chart" size={16} color="#16C784" />
+            <Text style={styles.spendingSubtext}> Live from MongoDB</Text>
           </View>
         </View>
 
@@ -48,26 +112,26 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* 3. Analytical Content: Spending Breakdown */}
+        {/* 3. Analytical Content: Spending Analysis */}
         <View style={styles.analyticsSection}>
           <Text style={styles.sectionTitle}>Spending Analysis</Text>
           <View style={styles.chartContainer}>
             <View style={styles.chartRow}>
-              {[
-                { day: 'Mon', vol: 40 }, { day: 'Tue', vol: 70 }, 
-                { day: 'Wed', vol: 50 }, { day: 'Thu', vol: 90 }, 
-                { day: 'Fri', vol: 65 }
-              ].map((item, index) => (
-                <View key={index} style={styles.barWrapper}>
-                  <View style={[styles.bar, { height: item.vol }]} />
-                  <Text style={styles.barLabel}>{item.day}</Text>
-                </View>
-              ))}
+              {chartData.map((item, index) => {
+                const maxHeight = 100;
+                const barHeight = totalSpent > 0 ? (item.amount / totalSpent) * maxHeight : 5;
+                return (
+                  <View key={index} style={styles.barWrapper}>
+                    <View style={[styles.bar, { height: Math.max(barHeight, 5) }]} />
+                    <Text style={styles.barLabel}>{getDayName(item._id)}</Text>
+                  </View>
+                );
+              })}
             </View>
           </View>
         </View>
 
-        {/* 4. Budget Categories */}
+        {/* 4. Budget Categories - NOW DYNAMIC */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Budget Categories</Text>
           <TouchableOpacity onPress={() => router.push('/category')}>
@@ -76,20 +140,22 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.categoriesList}>
-          <CategoryCard
-            title="Food"
-            amount="₹4,000 left"
-            status="success"
-            iconName="restaurant"
-            onPress={() => router.push({ pathname: '/category', params: { category: 'Food' } })}
-          />
-          <CategoryCard
-            title="Clothes"
-            amount="₹1,200 left"
-            status="success"
-            iconName="shirt"
-            onPress={() => router.push({ pathname: '/category', params: { category: 'Clothes' } })}
-          />
+          {categories.length > 0 ? (
+            categories.map((item: any, index: number) => (
+              <CategoryCard
+                key={index}
+                title={item._id} 
+                amount={`₹${item.total.toLocaleString()} spent`}
+                status="success"
+                iconName={getCategoryIcon(item._id)}
+                onPress={() => router.push({ pathname: '/category', params: { category: item._id } })}
+              />
+            ))
+          ) : (
+            <Text style={{ textAlign: 'center', color: THEME.colors.textSecondary, marginTop: 10 }}>
+              Scan a receipt to see category breakdown.
+            </Text>
+          )}
         </View>
 
         <View style={{ height: 40 }} /> 
